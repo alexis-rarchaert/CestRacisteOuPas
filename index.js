@@ -47,7 +47,7 @@ app.get('/getSentiment/:text', (req, res) => {
     res.send(rep);
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3002;
 app.listen(port, () => {
     console.log(`Serveur en cours d'exécution sur le port ${port}`);
 });
