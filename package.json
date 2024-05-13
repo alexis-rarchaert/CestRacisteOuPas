@@ -1,0 +1,15 @@
+{
+  "name": "c-estracisteoupas-",
+  "version": "1.0.0",
+  "description": "Petite appli qui vous indique si une phrase ou un mot est raciste ou non (Humoristique)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "natural": "^7.0.5"
+  }
+}
