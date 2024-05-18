@@ -1,6 +1,6 @@
 const natural = require('natural');
 const express = require('express');
-const fs = require('fs');
+const fs = require('node:fs');
 
 const app = express();
 const classifier = new natural.BayesClassifier();
@@ -25,6 +25,36 @@ app.get('/getSentiment/:text', (req, res) => {
     }
 
     res.send(rep);
+});
+
+let doc = {
+    "message": "Bienvenue sur une API de classification de termes",
+    "author": {
+        "name": "Alexis RARCHAERT",
+        "email": "bonjour@alexis-rarchaert.fr",
+        "website": "https://alexis-rarchaert.fr",
+        "contributors": [
+            {
+                "name": "firminunderscore",
+                "github": "https://github.com/firminunderscore"
+            }
+        ]
+    },
+    "version": "1.0.1",
+    "data": {
+        "dynamic": [
+            {
+                "name": "getSentiment",
+                "description": "Permet de classifier (raciste ou non)",
+                "method": "GET",
+                "endpoint": "/getSentiment/:text",
+            }
+        ]
+    }
+}
+
+app.get('/', (req, res) => {
+    res.send(doc);
 });
 
 const port = process.env.PORT || 3002;
