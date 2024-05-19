@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C'est raciste ou pas ?</title>
+
+    <meta name="description" content="Dis moi, c'est raciste ou pas ?">
+    <meta name="author" content="Alexis Rarchaert">
+    <meta name="keywords" content="raciste, pas raciste, c'est raciste ou pas, c'est raciste, c'est pas raciste">
+</head>
+<body>
+    <main>
+        <h4 id="props">-----</h4>
+        <h1>C'est raciste ou pas ?</h1>
+        <div id="form">
+            <input style="padding-left: 10px" type="text" id="input" placeholder="Entrez un mot">
+            <input type="submit" id="button" value="C'est raciste ou pas ?"/>
+        </div>
+        <a id="micro">Activer la reconnaisance vocale</a>
+    </main>
+
+    <p>
+        Nous collectons les données que vous entrez pour améliorer notre modèle de machine learning. En utilisant ce service, vous acceptez que vos données (IP, saisie) soient utilisées à des fins de recherche.
+        <br>
+        Nous ne collectons pas votre IP si vous ne terminez pas votre saisie.
+    </p>
+
+    <script>
+        //var url = "http://alexisrrchrt.ddns.net:3002/getSentiment/";
+        var url = "https://api.cestracisteoupas.alexis-rarchaert.fr/getSentiment/";
+
+        var body = document.querySelector("body");
+        var input = document.getElementById("input");
+        var button = document.getElementById("button");
+        var h2 = document.querySelector("h1");
+        var props = document.getElementById("props");
+
+        var micro = document.getElementById("micro");
+
+        button.addEventListener("click", function() {
+            checkSentiment();
+        });
+
+        input.addEventListener("keyup", function(event) {
+            if(event.key === "Enter") {
+                checkSentiment();
+            }
+        });
+
+        function checkSentiment() {
+            if(input.value != "" && input.value != null) {
+                //Fetch avec header
+
+                console.info("Envoi de la requête : ", url + input.value)
+                fetch(url + input.value)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.info("Texte : ", data.text)
+                        console.info("Réponse : ", data.classification)
+
+                        props.textContent = data.text;
+                        if(data.classification == "raciste") {
+                            body.classList.add("raciste");
+                            body.classList.remove("pas-raciste");
+                            h2.textContent = "C'est raciste";
+                        } else {
+                            body.classList.add("pas-raciste");
+                            body.classList.remove("raciste");
+                            h2.textContent = "Ce n'est pas raciste";
+                        }
+                    })
+                    .catch(error => {
+                        alert("Erreur : " + error);
+                    });
+            } else {
+                alert("Veuillez entrer un mot");
+            }
+        }
+
+        function getSentiment(text) {
+            async function classifyContent() {
+                const model = await toxicity.load();
+                const sentences = document.querySelectorAll('#content p');
+                
+                sentences.forEach(async (sentence) => {
+                    const predictions = await model.classify(sentence.innerText);
+                    predictions.forEach(prediction => {
+                        // Si le contenu est détecté comme raciste
+                        if (prediction.label === 'racism' && prediction.results[0].match) {
+                            // Marquer le contenu comme raciste
+                            body.classList.add("raciste");
+                            body.classList.remove("pas-raciste");
+                            h2.textContent = "C'est raciste";
+                        } else {
+                            body.classList.add("pas-raciste");
+                            body.classList.remove("raciste");
+                            h2.textContent = "Ce n'est pas raciste";
+                        }
+                    });
+                });
+            }
+        }
+
+        //reconnaisance vocale
+        var recognition = new webkitSpeechRecognition();
+        recognition.lang = "fr-FR";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = function(event) {
+            console.log(event);
+            var result = event.results[event.results.length - 1];
+            var transcript = result[0].transcript;
+            input.value = transcript;
+            checkSentiment();
+            micro.textContent = "Reconnaissance vocale terminée";
+        }
+
+        recognition.onend = function() {
+            console.log("Fin de la reconnaisance vocale");
+            micro.textContent = "Reprendre la reconnaisance vocale";
+        }
+
+        recognition.onerror = function(event) {
+            console.error(event);
+            micro.textContent = "Erreur : " + event.error;
+        }
+
+        micro.addEventListener("click", function() {
+            recognition.start();
+            micro.textContent = "Reconnaissance vocale en cours...";
+        });
+    </script>
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        main > h1 {
+            margin-top: 0;
+        }
+
+        main > div {
+            display: flex;
+            gap: 10px;
+        }
+
+        #form * {
+            display: block;
+            height: 4em;
+            padding: 0;
+        }
+
+        body > p {
+            position: fixed;
+            text-align: center;
+            bottom: 0;
+            font-size: 12px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            width: 30vw;
+        }
+
+        input[type="submit"] {
+            padding: 10px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            background-color: #000;
+            color: #fff;
+            cursor: pointer;
+            width: 20vw;
+        }
+
+        .raciste {
+            background-color: red;
+        }
+
+        .pas-raciste {
+            background-color: green;
+        }
+    </style>
+</body>
+</html>
